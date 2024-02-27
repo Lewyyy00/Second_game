@@ -2,6 +2,7 @@ import pygame
 import math 
 from random import randint, choice
 
+
 pygame.init()
 
 class Player(pygame.sprite.Sprite):
@@ -54,8 +55,7 @@ class Player(pygame.sprite.Sprite):
         self.player_input()
         self.apply_gravity()
         self.animation_state()
-class MovementObstacle(pygame.sprite.Sprite):
-    pass
+
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self,type):
         super().__init__()
@@ -74,7 +74,7 @@ class Obstacle(pygame.sprite.Sprite):
 
         self.animation_index = 0
         self.image = self.frames[self.animation_index]
-        self.rect = self.image.get_rect(midbottom = (randint(900,1100),y_pos))
+        self.rect = self.image.get_rect(midbottom = (randint(1500,1600),y_pos))
 
     def animation_state(self):
         self.animation_index += 0.1
@@ -90,12 +90,24 @@ class Obstacle(pygame.sprite.Sprite):
         if self.rect.x <= -100:
             self.kill()
 
+class Platform(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.level_ground = pygame.image.load('graphics/symbols/ground.png').convert_alpha()
+        self.rect = self.level_ground.get_rect(midbottom = (x ,y))
+
 
 
 #Background variables 
 height = 400
-width = 1200
+width = 1200 
 
+def collision_sprite():
+    if pygame.sprite.spritecollide(player.sprite,obstacle_group,False):
+        obstacle_group.empty()
+        return False
+    else:
+        return True
 
 screen = pygame.display.set_mode((width,height))
 
@@ -111,9 +123,14 @@ player = pygame.sprite.GroupSingle()
 player.add(Player())
 obstacle_group = pygame.sprite.Group()
 
+#platform
+platforms = pygame.sprite.Group()
+platform1 = Platform(100,100)
+platform2 = Platform(100,200)
+platforms.add(platform1, platform2)
+
 clock = pygame.time.Clock()
 game_active = True
-player_gravity = 0
 pygame.display.set_caption('untilted02')
 scroll = 0
 
@@ -151,6 +168,13 @@ while game_active:
 
     obstacle_group.draw(screen)
     obstacle_group.update()
+
+    game_active = collision_sprite()
+
+    #nie działa 
+    hit = pygame.sprite.spritecollide(player.sprite,platforms,False)
+    if hit:
+        player.gravity = 0
 
     pygame.display.update() 
     clock.tick(120)
